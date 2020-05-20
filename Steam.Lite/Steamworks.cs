@@ -11,7 +11,11 @@ namespace Steam.Lite
     /// </summary>
     public static class Steamworks
     {
-        private const string NativeLibraryName = "CSteamworks";
+        private const string NativeLibraryName = "steam_api";
+
+        private const string SteamAppsVersion = "STEAMAPPS_INTERFACE_VERSION008";
+        private const string SteamStatsVersion = "SteamGameServerStats001";
+        private const string SteamFriendsVersion = "SteamFriends015";
 
         [DllImport(NativeLibraryName, EntryPoint = "SteamAPI_Shutdown", CallingConvention = CallingConvention.Cdecl)]
         private static extern void SteamAPI_Shutdown();
@@ -97,6 +101,8 @@ namespace Steam.Lite
         private static extern IntPtr ISteamFriends_GetPersonaName(IntPtr steamFriendsPtr);
 
 
+
+
         private static bool s_valid;
         private static bool s_inited;
 
@@ -144,7 +150,7 @@ namespace Steam.Lite
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine("Exception initing steam: " + ex);
+                Console.Error.WriteLine("ERROR: Exception initing steam: " + ex);
                 s_valid = false;
                 return false;
             }
@@ -184,15 +190,15 @@ namespace Steam.Lite
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam client is null");
+                Console.Error.WriteLine("ERROR: Steam client is null");
                 return false;
             }
 
-            IntPtr stats = ISteamClient_GetISteamUserStats(client, IntPtr.Zero, IntPtr.Zero, null);
+            IntPtr stats = ISteamClient_GetISteamUserStats(client, SteamAPI_GetHSteamUser(), SteamAPI_GetHSteamPipe(), new UTF8StringHandle(SteamStatsVersion));
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam stats is null");
+                Console.Error.WriteLine("ERROR: Steam stats is null");
                 return false;
             }
 
@@ -202,7 +208,7 @@ namespace Steam.Lite
                 result = ISteamUserStats_SetAchievement(stats, ptrName);
 
             if (!result)
-                Console.Error.WriteLine("Error settings achievement " + name);
+                Console.Error.WriteLine("ERROR: Error settings achievement " + name);
             else
                 ISteamUserStats_StoreStats(stats);
 
@@ -220,15 +226,15 @@ namespace Steam.Lite
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam client is null");
+                Console.Error.WriteLine("ERROR: Steam client is null");
                 return false;
             }
 
-            IntPtr stats = ISteamClient_GetISteamUserStats(client, IntPtr.Zero, IntPtr.Zero, null);
+            IntPtr stats = ISteamClient_GetISteamUserStats(client, SteamAPI_GetHSteamUser(), SteamAPI_GetHSteamPipe(), new UTF8StringHandle(SteamStatsVersion));
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam stats is null");
+                Console.Error.WriteLine("ERROR: Steam stats is null");
                 return false;
             }
 
@@ -257,15 +263,15 @@ namespace Steam.Lite
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam client is null");
+                Console.Error.WriteLine("ERROR: Steam client is null");
                 return false;
             }
 
-            IntPtr stats = ISteamClient_GetISteamUserStats(client, IntPtr.Zero, IntPtr.Zero, null);
+            IntPtr stats = ISteamClient_GetISteamUserStats(client, SteamAPI_GetHSteamUser(), SteamAPI_GetHSteamPipe(), new UTF8StringHandle(SteamStatsVersion));
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam stats is null");
+                Console.Error.WriteLine("ERROR: Steam stats is null");
                 return false;
             }
 
@@ -275,7 +281,7 @@ namespace Steam.Lite
                 result = ISteamUserStats_SetStatInt32(stats, ptrName, value);
 
             if (!result)
-                Console.Error.WriteLine("Error settings stat " + name);
+                Console.Error.WriteLine("ERROR: Error settings stat " + name);
             else
                 if (save)
                     ISteamUserStats_StoreStats(stats);
@@ -300,15 +306,15 @@ namespace Steam.Lite
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam client is null");
+                Console.Error.WriteLine("ERROR: Steam client is null");
                 return false;
             }
 
-            IntPtr stats = ISteamClient_GetISteamUserStats(client, IntPtr.Zero, IntPtr.Zero, null);
+            IntPtr stats = ISteamClient_GetISteamUserStats(client, SteamAPI_GetHSteamUser(), SteamAPI_GetHSteamPipe(), new UTF8StringHandle(SteamStatsVersion));
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam stats is null");
+                Console.Error.WriteLine("ERROR: Steam stats is null");
                 return false;
             }
 
@@ -318,7 +324,7 @@ namespace Steam.Lite
                 result = ISteamUserStats_SetStatFloat(stats, ptrName, value);
 
             if (!result)
-                Console.Error.WriteLine("Error settings stat " + name);
+                Console.Error.WriteLine("ERROR: Error settings stat " + name);
             else
                 if (save)
                     ISteamUserStats_StoreStats(stats);
@@ -335,15 +341,15 @@ namespace Steam.Lite
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam client is null");
+                Console.Error.WriteLine("ERROR: Steam client is null");
                 return false;
             }
 
-            IntPtr stats = ISteamClient_GetISteamUserStats(client, IntPtr.Zero, IntPtr.Zero, null);
+            IntPtr stats = ISteamClient_GetISteamUserStats(client, SteamAPI_GetHSteamUser(), SteamAPI_GetHSteamPipe(), new UTF8StringHandle(SteamStatsVersion));
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam stats is null");
+                Console.Error.WriteLine("ERROR: Steam stats is null");
                 return false;
             }
 
@@ -361,15 +367,15 @@ namespace Steam.Lite
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam client is null");
+                Console.Error.WriteLine("ERROR: Steam client is null");
                 return string.Empty;
             }
 
-            IntPtr apps = ISteamClient_GetISteamApps(client, IntPtr.Zero, IntPtr.Zero, null);
+            IntPtr apps = ISteamClient_GetISteamApps(client, SteamAPI_GetHSteamUser(), SteamAPI_GetHSteamPipe(), new UTF8StringHandle(SteamAppsVersion));
 
             if (apps == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam apps is null");
+                Console.Error.WriteLine("ERROR: Steam apps is null");
                 return string.Empty;
             }
 
@@ -390,15 +396,15 @@ namespace Steam.Lite
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam client is null");
+                Console.Error.WriteLine("ERROR: Steam client is null");
                 return false;
             }
 
-            IntPtr apps = ISteamClient_GetISteamApps(client, IntPtr.Zero, IntPtr.Zero, null);
+            IntPtr apps = ISteamClient_GetISteamApps(client, SteamAPI_GetHSteamUser(), SteamAPI_GetHSteamPipe(), new UTF8StringHandle(SteamAppsVersion));
 
             if (apps == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam apps is null");
+                Console.Error.WriteLine("ERROR: Steam apps is null");
                 return false;
             }
 
@@ -415,15 +421,15 @@ namespace Steam.Lite
 
             if (client == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam client is null");
+                Console.Error.WriteLine("ERROR: Steam client is null");
                 return string.Empty;
             }
 
-            IntPtr friends = ISteamClient_GetISteamFriends(client, IntPtr.Zero, IntPtr.Zero, null);
+            IntPtr friends = ISteamClient_GetISteamFriends(client, SteamAPI_GetHSteamUser(), SteamAPI_GetHSteamPipe(), new UTF8StringHandle(SteamFriendsVersion));
 
             if (friends == IntPtr.Zero)
             {
-                Console.Error.WriteLine("Steam friends is null");
+                Console.Error.WriteLine("ERROR: Steam friends is null");
                 return string.Empty;
             }
 
@@ -471,6 +477,8 @@ namespace Steam.Lite
         // Shamessly borrowed from Steamworks.Net
         private class UTF8StringHandle : Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid
         {
+            public static readonly UTF8StringHandle Empty = new UTF8StringHandle(null);
+
             public UTF8StringHandle(string str)
                 : base(true)
             {
