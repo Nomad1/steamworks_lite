@@ -451,7 +451,7 @@ namespace Steam.Lite
             if (nativeUtf8 == IntPtr.Zero)
                 return string.Empty;
 
-            const int DefaultBufferLength = 4;// 256;
+            const int DefaultBufferLength = 256;
 
             byte[] buffer = new byte[DefaultBufferLength];
 
@@ -477,8 +477,6 @@ namespace Steam.Lite
         // Shamessly borrowed from Steamworks.Net
         private class UTF8StringHandle : Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid
         {
-            public static readonly UTF8StringHandle Empty = new UTF8StringHandle(null);
-
             public UTF8StringHandle(string str)
                 : base(true)
             {
