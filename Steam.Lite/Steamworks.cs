@@ -1,102 +1,134 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Diagnostics;
 
-namespace Steamworks.RunServer
+namespace Steam.Lite
 {
+    /// <summary>
+    /// This wrapper is very simple and it forbid low level access to Steam library
+    /// Instead there should be managed wrappers to hide ugly names and pointers
+    /// </summary>
     public static class Steamworks
     {
-        internal const string NativeLibraryName = "CSteamworks";
+        private const string NativeLibraryName = "CSteamworks";
         
         [DllImport(NativeLibraryName, EntryPoint = "Shutdown", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SteamAPI_Shutdown();
+        private static extern void SteamAPI_Shutdown();
 
         [DllImport(NativeLibraryName, EntryPoint = "IsSteamRunning", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool SteamAPI_IsSteamRunning();
+        private static extern bool SteamAPI_IsSteamRunning();
 
         [DllImport(NativeLibraryName, EntryPoint = "RestartAppIfNecessary", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool SteamAPI_RestartAppIfNecessary(int unOwnAppID);
+        private static extern bool SteamAPI_RestartAppIfNecessary(int unOwnAppID);
 
         [DllImport(NativeLibraryName, EntryPoint = "Init", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool SteamAPI_Init();
+        private static extern bool SteamAPI_Init();
 
         // helper objects
 
         [DllImport(NativeLibraryName, EntryPoint = "SteamClient_", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr SteamClient();
+        private static extern IntPtr SteamClient();
 
         [DllImport(NativeLibraryName, EntryPoint = "SteamUserStats", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr SteamUserStats();
+        private static extern IntPtr SteamUserStats();
 
         [DllImport(NativeLibraryName, EntryPoint = "SteamApps", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr SteamApps();
+        private static extern IntPtr SteamApps();
         
         // apps
-        [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern string ISteamApps_GetCurrentGameLanguage();
+        [DllImport(NativeLibraryName, EntryPoint= "ISteamApps_GetCurrentGameLanguage", CallingConvention = CallingConvention.Cdecl)]
+        private static extern string ISteamApps_GetCurrentGameLanguage();
 
-        [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr ISteamApps_GetAvailableGameLanguages();
+        [DllImport(NativeLibraryName, EntryPoint = "ISteamApps_GetAvailableGameLanguages", CallingConvention = CallingConvention.Cdecl)]
+        private static extern string ISteamApps_GetAvailableGameLanguages();
 
-        [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeLibraryName, EntryPoint = "ISteamApps_BIsDlcInstalled", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool ISteamApps_BIsDlcInstalled(int appID);
+        private static extern bool ISteamApps_BIsDlcInstalled(int appID);
 
         // stats
         
-        [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeLibraryName, EntryPoint = "ISteamUserStats_RequestCurrentStats",  CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool ISteamUserStats_RequestCurrentStats();
+        private static extern bool ISteamUserStats_RequestCurrentStats();
         
-        [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeLibraryName, EntryPoint = "ISteamUserStats_StoreStats", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool ISteamUserStats_StoreStats();
+        private static extern bool ISteamUserStats_StoreStats();
 
-        [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeLibraryName, EntryPoint = "ISteamUserStats_SetStat", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool ISteamUserStats_SetStat(string pchName, int nData);
+        private static extern bool ISteamUserStats_SetStat(string pchName, int nData);
 
-        [DllImport(NativeLibraryName, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(NativeLibraryName, EntryPoint = "ISteamUserStats_SetAchievement", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool ISteamUserStats_SetAchievement(string pchName);
+        private static extern bool ISteamUserStats_SetAchievement(string pchName);
         
-        
-        public static void Init(int appId)
+
+
+        public static bool Init(int appId)
         {
 #if !DEBUG
-            //Steamworks.SteamAPI_RestartAppIfNecessary(appId);
+            if (SteamAPI_RestartAppIfNecessary(appId))
+            {
+                Console.WriteLine("Restarting app with Steam");
+                return false;
+            }
 #endif
-            Steamworks.SteamAPI_Init();
+            return SteamAPI_Init();
         }
 
         public static void Shutdown()
         {
-            Steamworks.SteamAPI_Shutdown();
+            SteamAPI_Shutdown();
         }
 
         public static void SetAchievement(string name)
         {
-            if (!Steamworks.ISteamUserStats_SetAchievement(name))
-                Console.WriteLine("Error settings achievement " + name);
+            if (!ISteamUserStats_SetAchievement(name))
+                Console.Error.WriteLine("Error settings achievement " + name);
             else
-                Steamworks.ISteamUserStats_StoreStats();
+                ISteamUserStats_StoreStats();
         }
 
         public static void SetStat(string name, int value)
         {
-            if (!Steamworks.ISteamUserStats_SetStat(name, value))
-                Console.WriteLine("Error settings stat " + name);
+            if (!ISteamUserStats_SetStat(name, value))
+                Console.Error.WriteLine("Error settings stat " + name);
             else
-                Steamworks.ISteamUserStats_StoreStats();
+                ISteamUserStats_StoreStats();
         }
 
-        public static string GetLanguage()
+        /// <summary>
+        /// Gets current language selected for this game
+        /// </summary>
+        /// <returns></returns>
+        public static string GetCurrentGameLanguage()
         {
-            return Steamworks.ISteamApps_GetCurrentGameLanguage();
+            return ISteamApps_GetCurrentGameLanguage();
         }
+
+        /// <summary>
+        /// Gets all available languages defined for this game
+        /// </summary>
+        /// <returns></returns>
+        public static string GetAvailableGameLanguages()
+        {
+            return ISteamApps_GetAvailableGameLanguages();
+        }
+
+        /// <summary>
+        /// Checks if DLC is installed
+        /// </summary>
+        /// <param name="appID"></param>
+        /// <returns></returns>
+        public static bool IsDlcInstalled(int appID)
+        {
+            return ISteamApps_BIsDlcInstalled(appID);
+        }
+
     }
 }
 
