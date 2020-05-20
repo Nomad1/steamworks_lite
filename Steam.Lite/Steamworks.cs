@@ -5,7 +5,7 @@ using System.Text;
 namespace Steam.Lite
 {
     /// <summary>
-    /// Wrapper for CSteamworks library.
+    /// Wrapper for Steamworks SDK version 1.48a
     /// This wrapper is very simple and it forbid low level access to Steam library
     /// Instead there should be managed wrappers to hide ugly names and pointers
     /// </summary>
@@ -40,6 +40,9 @@ namespace Steam.Lite
 
         [DllImport(NativeLibraryName, EntryPoint = "SteamAPI_GetHSteamUser", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr SteamAPI_GetHSteamUser();
+
+        [DllImport(NativeLibraryName, EntryPoint = "SteamAPI_GetSteamInstallPath", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr SteamAPI_GetSteamInstallPath();
 
         // helper objects
 
@@ -434,6 +437,52 @@ namespace Steam.Lite
             }
 
             return PtrToStringUTF8(ISteamFriends_GetPersonaName(friends));
+        }
+
+        public static string GetAccountName()
+        {
+            if (!s_inited || !s_valid)
+                return string.Empty;
+
+            string path = PtrToStringUTF8(SteamAPI_GetSteamInstallPath());
+
+            if (string.IsNullOrEmpty(path) || !System.IO.Directory.Exists(path))
+            {
+                Console.Error.WriteLine("ERROR: Steam path is invalid");
+                return string.Empty;
+            }
+
+            try
+            {
+                string file = System.IO.Path.Combine(path, "config", "SteamAppData.vdf");
+
+                if (System.IO.File.Exists(file))
+                {
+                    string[] text = System.IO.File.ReadAllLines(file);
+
+                    foreach (string line in text)
+                        if (line.Contains("AutoLoginUser"))
+                        {
+                            string[] nameParts = line.Split(new char[] { ' ', '"', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                            if (nameParts.Length > 1)
+                                return nameParts[1];
+                        }
+                }
+                else
+                {
+                    Console.Error.WriteLine("ERROR: SteamAppData.vdf file not found");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("ERROR: Failed to read vdf config: {0}", ex);
+            }
+
+            Console.Error.WriteLine("ERROR: Failed to get steam account name");
+
+            return string.Empty;
         }
 
         public static void RunCallbacks()
